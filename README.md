@@ -1,5 +1,10 @@
 # thorntail-automation with CloudFormation
 
+FIXMEs
+
+- hard-coded subnet ids in fargate-ci-cd.yaml
+- hard-coded security group id in fargate-ci-cd.yaml
+
 Pre-conditions
 
 - bash (tested with Terminal.app)
@@ -16,32 +21,47 @@ Create a thorntail (JEE) hello world application and push to your newly created 
     
     git clone https://github.com/chtzuehlke/thorntail-codebuild-hello-world.git
     cd thorntail-codebuild-hello-world/
+    
     rm -fR .git
-
     git init
     git add .
     git commit -m "First commit"
-    git status
     git remote add origin $REPO_SSH_URL
     git push -u origin master
+
+    cd ..
 
 Create CI/CD pipeline
 
     ./create-stack-fargate-ci-cd.sh hellee
 
+    #FIXME wait for first successful build ;-)
+
+    ./ecs_update_service_desiredcount.sh hellee 1
+
 Test your deployed thorntail (JEE) app
 
     #FIXME figure out IP yourself ;-)
-    curl -v  34.244.43.137:8080/catalog?search=foo
+
+    curl -v  34.242.197.81:8080/catalog?search=foo
 
 Modify and test your re-deployed function
+
+    cd thorntail-codebuild-hello-world/
 
     vi ./src/main/java/com/zuehlke/cht/poc/catalogpicsearch/rest/CatalogEndpoint.java
     git commit -a -m "adjusted"
     git push
 
-    sleep FIXME
+    cd ..
 
-    curl FIXME
+    #FIXME wait for 2nd successful build ;-)
+    #FIXME figure out _new_ IP yourself ;-)
+
+    curl -v  52.213.77.222:8080/catalog?search=foo
+
+Save costs (you're still paying)
+
+    ./ecs_update_service_desiredcount.sh hellee 0
 
 Done :)
