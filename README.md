@@ -14,8 +14,8 @@ Create a thorntail (JEE) hello world application and push to your newly created 
 
     export REPO_SSH_URL=$(./describe-stack-gitrepo-url.sh hellee)
     
-    git clone https://github.com/chtzuehlke/FIXME
-    cd FIXME/
+    git clone https://github.com/chtzuehlke/thorntail-codebuild-hello-world.git
+    cd thorntail-codebuild-hello-world/
     rm -fR .git
 
     git init
