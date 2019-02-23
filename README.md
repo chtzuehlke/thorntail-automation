@@ -1,4 +1,4 @@
-# thorntail-automation with CloudFormation
+# thorntail-automation with CloudFormation (alpha version)
 
 FIXMEs
 
