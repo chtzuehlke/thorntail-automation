@@ -4,6 +4,7 @@ FIXMEs
 
 - hard-coded subnet ids in fargate-ci-cd.yaml
 - hard-coded security group id in fargate-ci-cd.yaml
+- update Route53 managed CNAME after re-deploy (avoid expensive ALB)
 
 Pre-conditions
 
