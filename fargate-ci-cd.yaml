@@ -1,0 +1,346 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CI/CD for Fargate Application
+Parameters:
+  CodeCommitRepositoryARN:
+    Type: String
+  CodeCommitRepositoryName:
+    Type: String
+  Subnets:
+    Type: "List<AWS::EC2::Subnet::Id>"
+  SecurityGroup:
+    Type: "AWS::EC2::SecurityGroup::Id"  
+Resources:
+  FargateCluster:
+    Type: AWS::ECS::Cluster
+  TaskLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Join [ '', [ '/ecs/', !Ref 'AWS::StackName' ] ]
+      RetentionInDays: 7
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties: 
+      ExecutionRoleArn: !GetAtt ECSExecutionRole.Arn
+      #TaskRoleArn: String
+      Cpu: "256"
+      Memory: "512"
+      Family: !Ref 'AWS::StackName'
+      NetworkMode: "awsvpc"
+      RequiresCompatibilities:
+        - "FARGATE"
+      ContainerDefinitions:
+        - Cpu: "256"
+          Essential: true
+          Image: !Join [ '', [ !Ref 'AWS::AccountId', '.dkr.ecr.', !Ref 'AWS::Region', '.amazonaws.com/', !Ref ECRRepository, ':latest' ] ]
+          LogConfiguration:
+            LogDriver: "awslogs"
+            Options:
+              "awslogs-group": !Ref TaskLogGroup
+              "awslogs-region": !Ref 'AWS::Region'
+              "awslogs-stream-prefix": "ecs"
+          Memory: "512"
+          MemoryReservation: "512"
+          Name: !Ref 'AWS::StackName'
+          PortMappings:
+            - ContainerPort: 8080
+              Protocol: "tcp"
+  FargateService:
+    Type: AWS::ECS::Service
+    Properties: 
+      Cluster: !Ref FargateCluster
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: 0
+      LaunchType: "FARGATE"
+      NetworkConfiguration: 
+        AwsvpcConfiguration: 
+          AssignPublicIp: "ENABLED"
+          SecurityGroups: 
+            - !Ref SecurityGroup
+          Subnets: !Ref Subnets
+      PlatformVersion: "LATEST"
+      SchedulingStrategy: "REPLICA"
+      ServiceName: !Ref 'AWS::StackName'
+      TaskDefinition: !Ref TaskDefinition
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties: 
+      RepositoryName: !Ref 'AWS::StackName'
+  PipelineArtifsctStoreBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+  CodeBuildCacheBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+  ECSExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "ecs-tasks.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+      MaxSessionDuration: 3600
+      Path: /service-role/
+  TriggerEventPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action: "codepipeline:StartPipelineExecution"
+            Resource: !Join [ '', [ 'arn:aws:codepipeline:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', !Ref CodePipeline ] ]
+  TriggerEventRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "events.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref TriggerEventPolicy
+      MaxSessionDuration: 3600
+      Path: /service-role/
+  CodePipelinePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action: "iam:PassRole"
+            Resource: "*"
+            Condition:
+              StringEqualsIfExists:
+                iam:PassedToService:
+                  - "cloudformation.amazonaws.com"
+                  - "elasticbeanstalk.amazonaws.com"
+                  - "ec2.amazonaws.com"
+                  - "ecs-tasks.amazonaws.com"
+          - Effect: "Allow"
+            Action:
+              - "codecommit:CancelUploadArchive"
+              - "codecommit:GetBranch"
+              - "codecommit:GetCommit"
+              - "codecommit:GetUploadArchiveStatus"
+              - "codecommit:UploadArchive"
+            Resource: "*"
+          - Effect: "Allow"
+            Action:
+              - "codedeploy:CreateDeployment"
+              - "codedeploy:GetApplication"
+              - "codedeploy:GetApplicationRevision"
+              - "codedeploy:GetDeployment"
+              - "codedeploy:GetDeploymentConfig"
+              - "codedeploy:RegisterApplicationRevision"
+            Resource: "*"
+          - Effect: "Allow"
+            Action:
+              - "s3:*"
+              - "cloudformation:*"
+              - "ecs:*"
+            Resource: "*"
+          - Effect: "Allow"
+            Action:
+              - "codebuild:BatchGetBuilds"
+              - "codebuild:StartBuild"
+            Resource: "*"
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "codepipeline.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref CodePipelinePolicy
+      MaxSessionDuration: 3600
+      Path: /service-role/
+  CodeBuildPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement: 
+          - Effect: "Allow"
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource:
+              - !Join [ '', [ 'arn:aws:logs:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':log-group:/aws/codebuild/', !Ref 'AWS::StackName', 'Build' ] ]
+              - !Join [ '', [ 'arn:aws:logs:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':log-group:/aws/codebuild/', !Ref 'AWS::StackName', 'Build', ':*' ] ]
+          - Effect: "Allow"
+            Action:
+              - "s3:PutObject"
+              - "s3:GetObject"
+              - "s3:GetObjectVersion"
+              - "s3:GetBucketAcl"
+              - "s3:GetBucketLocation"
+            Resource:
+              - !Join
+                - ''
+                - - "arn:aws:s3:::"
+                  - !Ref PipelineArtifsctStoreBucket
+                  - "*"
+              - !Join
+                - ''
+                - - "arn:aws:s3:::"
+                  - !Ref CodeBuildCacheBucket
+                  - "*"                  
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "codebuild.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref CodeBuildPolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser
+      MaxSessionDuration: 3600
+      Path: /service-role/
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Join [ '', [ !Ref 'AWS::StackName', 'Build' ] ]
+      Artifacts:
+        EncryptionDisabled: true
+        Name: !Join [ '', [ !Ref 'AWS::StackName', 'Pipeline' ] ]
+        Packaging: "NONE"
+        Type: "CODEPIPELINE"
+      Cache:
+        Type: "S3"
+        Location: !Ref CodeBuildCacheBucket
+      Description: "CodeBuild for Fargate Application"
+      Environment:
+        ComputeType: "BUILD_GENERAL1_SMALL"
+        EnvironmentVariables:
+          - Name: "DOCKER_IMAGE_NAME"
+            Type: "PLAINTEXT"
+            Value: !Ref ECRRepository
+          - Name: "REPOSITORY_URI"
+            Type: "PLAINTEXT"
+            Value: !Join [ '', [ !Ref 'AWS::AccountId', '.dkr.ecr.', !Ref 'AWS::Region', '.amazonaws.com/', !Ref ECRRepository ] ]
+        Image: "aws/codebuild/java:openjdk-8"
+        ImagePullCredentialsType: "CODEBUILD"
+        PrivilegedMode: true
+        Type: "LINUX_CONTAINER"
+      LogsConfig:
+        CloudWatchLogs:
+          Status:  "ENABLED"
+        S3Logs:
+          Status:  "DISABLED"
+      QueuedTimeoutInMinutes: 480
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      Source:
+        InsecureSsl: false
+        Type: "CODEPIPELINE"
+      TimeoutInMinutes: 60
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Join [ '', [ !Ref 'AWS::StackName', 'Pipeline' ] ]
+      ArtifactStores:
+        - ArtifactStore:
+            Location: !Ref PipelineArtifsctStoreBucket
+            Type: "S3"
+          Region: !Ref 'AWS::Region'
+      RoleArn: !GetAtt CodePipelineRole.Arn
+      Stages:
+        - Name: "Source"
+          Actions:
+            - ActionTypeId:
+                Category: "Source"
+                Owner: "AWS"
+                Provider: "CodeCommit"
+                Version: "1"
+              Configuration:
+                BranchName: "master"
+                PollForSourceChanges: "false"
+                RepositoryName: !Ref CodeCommitRepositoryName
+              Name: "Source"
+              OutputArtifacts:
+                - Name: "SourceArtifact"
+              Region: !Ref 'AWS::Region'
+              RunOrder: 1
+        - Name: "Build"
+          Actions:
+            - ActionTypeId:
+                Category: "Build"
+                Owner: "AWS"
+                Provider: "CodeBuild"
+                Version: "1"
+              Configuration:
+                ProjectName: !Join [ '', [ !Ref 'AWS::StackName', 'Build' ] ]
+              InputArtifacts:
+                - Name: "SourceArtifact"
+              Name: "Build"
+              OutputArtifacts:
+                - Name: "CloudformationArtifact"
+              Region: !Ref 'AWS::Region'
+              RunOrder: 1
+        - Name: "Deploy"
+          Actions:
+            - ActionTypeId:
+                Category: "Deploy"
+                Owner: "AWS"
+                Provider: "ECS"
+                Version: "1"
+              Configuration:
+                ClusterName: !Ref FargateCluster
+                ServiceName: !Ref FargateService
+              InputArtifacts:
+              #  - Name: SourceArtifact
+                - Name: CloudformationArtifact
+              Name: "Deploy"
+              Region: !Ref 'AWS::Region'
+              RunOrder: 1
+  CodePipelineTriggerEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventPattern:
+        source:
+          - aws.codecommit
+        detail-type:
+          - 'CodeCommit Repository State Change'
+        resources:
+          - !Ref CodeCommitRepositoryARN
+        detail:
+          event:
+            - referenceCreated
+            - referenceUpdated
+          referenceType:
+            - branch
+          referenceName:
+            - master
+      Targets:
+        - Id: "codepipeline"
+          Arn: !Join [ '', [ 'arn:aws:codepipeline:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', !Ref CodePipeline ] ]
+          RoleArn: !GetAtt TriggerEventRole.Arn
+Outputs:
+  FargateCluster:
+    Value: !Ref FargateCluster
