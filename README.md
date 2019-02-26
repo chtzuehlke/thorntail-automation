@@ -1,16 +1,23 @@
-# thorntail-automation with CloudFormation
+# thorntail-automation with CloudFormation (alpha version)
 
-FIXMEs
+## Intro
 
-- hard-coded subnet ids in fargate-ci-cd.yaml
-- hard-coded security group id in fargate-ci-cd.yaml
-- update Route53 managed CNAME after re-deploy (avoid expensive ALB)
+Quick way to start a new thorntail-based and AWS Fargate-backed project?
 
-Pre-conditions
+This step by step guide shows you how to create the following in approx. 15':
+- New 
 
-- bash (tested with Terminal.app)
-- AWS CLI installed configured (IAM user with admin permissions)
+## FIXMEs
+
+- Update Route53 managed CNAME after re-deploy (avoid expensive ALB)
+
+## Pre-conditions
+
+- Linux-like environment: Bash, curl, git, sed, ...
+- AWS CLI installed and configured (IAM user with ~admin permissions)
 - Setup Steps for SSH Connections to AWS CodeCommit Repositories: https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-ssh-unixes.html?icmpid=docs_acc_console_connect_np
+
+## Step by step
 
 Create new CodeCommit git repository
 
@@ -66,3 +73,4 @@ Save costs (you're still paying)
     ./ecs_update_service_desiredcount.sh hellee 0
 
 Done :)
+

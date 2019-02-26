@@ -5,11 +5,21 @@ Parameters:
     Type: String
   CodeCommitRepositoryName:
     Type: String
+  VPC:
+    Type: AWS::EC2::VPC::Id
   Subnets:
     Type: "List<AWS::EC2::Subnet::Id>"
-  SecurityGroup:
-    Type: "AWS::EC2::SecurityGroup::Id"  
 Resources:
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: HTTP 8080
+      SecurityGroupIngress: 
+        -  IpProtocol: "tcp"
+           FromPort: 8080
+           ToPort: 8080
+           CidrIp: "0.0.0.0/0"
+      VpcId: !Ref VPC
   FargateCluster:
     Type: AWS::ECS::Cluster
   TaskLogGroup:
