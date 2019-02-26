@@ -4,10 +4,10 @@
 
 Quick way to start a new thorntail-based (https://thorntail.io/) and AWS Fargate-backed (https://aws.amazon.com/fargate/) project.
 
-First CloudFormation (https://aws.amazon.com/cloudformation/) stack:
+First CloudFormation (https://aws.amazon.com/cloudformation/) stack ("<A>Code"):
 - New CodeCommit (https://aws.amazon.com/codecommit/) git repository for your new JEE demo app
 
-Second CloudFormation stack:
+Second CloudFormation stack  ("<A>"):
 - New ECR Repository (docker repository) for your new JEE demo app container
 - Your app deployed to a newly created Fargate Cluster (as a service with one task with one container with your app)
 - New CI/CD pipeline ("git push" adjusted app sources and your app will be re-reployed) leveraging CodePipeline and CodeBuild
@@ -20,11 +20,11 @@ Disclainer: Not ready for production (no error handling, amongst others) => read
 - AWS CLI installed and configured (IAM user with ~admin permissions)
 - Setup Steps for SSH Connections to AWS CodeCommit Repositories: https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-ssh-unixes.html?icmpid=docs_acc_console_connect_np
 
-## Setup
+## Setup (-> monthly AWS costs)
 
     ./create-stacks.sh myhelloworldapp
 
-## Teardown
+## Teardown (-> code in CodeCommit repo lost!)
 
     ./delete_stacks.sh myhelloworldapp
 
