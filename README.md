@@ -20,6 +20,10 @@ Disclainer: Not ready for production (no error handling, amonst others) => read 
 - AWS CLI installed and configured (IAM user with ~admin permissions)
 - Setup Steps for SSH Connections to AWS CodeCommit Repositories: https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-ssh-unixes.html?icmpid=docs_acc_console_connect_np
 
-## Step by step
+## Setup
 
-    ./create-stack-fargate-ci-cd.sh hellee
+    ./create-stack-fargate-ci-cd.sh myhelloworldapp
+
+## Terrdown
+
+    ./delete_stacks.sh myhelloworldapp

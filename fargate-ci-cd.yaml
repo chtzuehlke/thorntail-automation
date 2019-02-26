@@ -354,3 +354,9 @@ Resources:
 Outputs:
   FargateCluster:
     Value: !Ref FargateCluster
+  PipelineArtifsctStoreBucket:
+    Value: !Ref PipelineArtifsctStoreBucket
+  CodeBuildCacheBucket:
+    Value: !Ref CodeBuildCacheBucket
+  ECRRepository:
+    Value: !Ref ECRRepository
