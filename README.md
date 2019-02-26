@@ -27,3 +27,7 @@ Disclainer: Not ready for production (no error handling, amongst others) => read
 ## Teardown
 
     ./delete_stacks.sh myhelloworldapp
+
+## Big Picture
+
+![overview](./overview.png)
