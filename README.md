@@ -22,6 +22,8 @@ Disclainer: Not ready for production (no error handling, amongst others) => read
 
 ## Setup (-> monthly AWS costs)
 
+Chose a name for "&lt;A>Code" (lowercase alphanum), e.g. "myhelloworldapp". Then:
+
     ./create-stacks.sh myhelloworldapp
 
 ## Teardown (-> code in CodeCommit repo lost!)
