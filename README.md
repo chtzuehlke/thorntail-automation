@@ -24,6 +24,6 @@ Disclainer: Not ready for production (no error handling, amonst others) => read 
 
     ./create-stack-fargate-ci-cd.sh myhelloworldapp
 
-## Terrdown
+## Teardown
 
     ./delete_stacks.sh myhelloworldapp
