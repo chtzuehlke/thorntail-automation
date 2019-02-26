@@ -2,7 +2,7 @@
 
 NAME=$1
 REPO_STACK_NAME="${NAME}Code"
-STACK_NAME=$NAME
+STACK_NAME="${NAME}"
 
 CODE_COMMIT_ARN=$(aws cloudformation describe-stacks --stack-name $REPO_STACK_NAME --query 'Stacks[].Outputs[?OutputKey==`CodeCommitRepositoryARN`].OutputValue' --output text)
 CODE_COMMIT_NAME=$(aws cloudformation describe-stacks --stack-name $REPO_STACK_NAME --query 'Stacks[].Outputs[?OutputKey==`CodeCommitRepositoryName`].OutputValue' --output text)

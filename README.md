@@ -82,4 +82,3 @@ Save costs (you're still paying)
     ./ecs_update_service_desiredcount.sh hellee 0
 
 Done :)
-
