@@ -22,7 +22,7 @@ Disclainer: Not ready for production (no error handling, amongst others) => read
 
 ## Setup
 
-    ./create-stack-fargate-ci-cd.sh myhelloworldapp
+    ./create-stacks.sh myhelloworldapp
 
 ## Teardown
 
