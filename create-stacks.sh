@@ -49,7 +49,7 @@ echo "Wait for public IP of newly created container"
 PUBLIC_IP=$(./ecs_container_ip.sh $PROJECT_NAME)
 
 echo
-echo "Soon you can reach your HTTP endpoint:"
+echo "Soon (approx 2 min) you can reach your HTTP endpoint:"
 echo curl -v http://$PUBLIC_IP:8080/catalog?search=foox
 
 echo
@@ -57,4 +57,4 @@ echo "Pushes from projects/$PROJECT_NAME will trigger the CI/CD pipeline"
 
 echo
 echo "Stop the container after experimenting:"
-echo ./ecs_update_service_desiredcount.sh $PROJECT_NAME 1
+echo ./ecs_update_service_desiredcount.sh $PROJECT_NAME 0

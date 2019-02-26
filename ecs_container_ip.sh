@@ -9,7 +9,7 @@ FARGATE_CLUSTER=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --
 
 COUNT=$(aws ecs list-tasks --cluster $FARGATE_CLUSTER --family $STACK_NAME --query "taskArns[]" --output text | wc -l)
 while [ $COUNT -ne 1 ]; do
-  echo "Actual task count $COUNT <> expected cout 1. Sleeping 30s"
+  #echo "Actual task count $COUNT <> expected cout 1. Sleeping 30s"
   sleep 30
   COUNT=$(aws ecs list-tasks --cluster $FARGATE_CLUSTER --family $STACK_NAME --query "taskArns[]" --output text | wc -l)
 done
