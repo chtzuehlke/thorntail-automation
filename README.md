@@ -10,9 +10,9 @@ First CloudFormation (https://aws.amazon.com/cloudformation/) stack:
 Second CloudFormation stack:
 - New ECR Repository (docker repository) for your new JEE demo app container
 - Your app deployed to a newly created Fargate Cluster (as a service with one task with one container with your app)
-- New CI/CD pipeline (push adjusted app sources and your app will be re-reployed) leveraging CodePipeline and CodeBuild
+- New CI/CD pipeline ("git push" adjusted app sources and your app will be re-reployed) leveraging CodePipeline and CodeBuild
 
-Disclainer: Not ready for production (no error handling, amonst others) => read and understand the scripts & templates before executing them!
+Disclainer: Not ready for production (no error handling, amongst others) => read and understand the scripts & templates before executing them!
 
 ## Pre-conditions
 
