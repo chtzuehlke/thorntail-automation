@@ -14,7 +14,7 @@ CloudFormation stack 2:
 - Your app deployed to a newly created Fargate Cluster (as a service with desired count=0 and one task with one container with your app)
 - New CI/CD pipeline (push adjusted app sources and your app will be re-reployed) leveraging CodePipeline and CodeBuild
 
-Disclainer: Not tested/ready for production (yet).
+Disclainer: Not tested/ready for production (yet) => read and understand the scripts & templates before executing them!
 
 ## FIXMEs
 
@@ -29,4 +29,3 @@ Disclainer: Not tested/ready for production (yet).
 ## Step by step (short version)
 
     ./create-stack-fargate-ci-cd.sh hellee
-
