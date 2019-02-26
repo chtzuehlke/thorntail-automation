@@ -28,7 +28,7 @@ Disclainer: Not tested/ready for production (yet).
 
 ## Step by step
 
-Create new CodeCommit git repository
+Create new CodeCommit git repository for a new sample app called "hellee"
 
     ./create-stack-gitrepo.sh hellee
 
