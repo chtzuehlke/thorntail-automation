@@ -33,3 +33,9 @@ Chose a name for "&lt;A>" (lowercase alphanum), e.g. "myhelloworldapp". Then:
 ## Big Picture
 
 ![overview](./overview.png)
+
+## FIXMEs
+
+- Stack deletion: unregister all task definition versions
+- Cleanup IAM policis (least privilege)
+
